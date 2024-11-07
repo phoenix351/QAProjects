@@ -24,15 +24,7 @@ module.exports = function (app, myDataBase) {
           issues = await myDataBase.find({}).toArray();
         }
 
-        // console.log({ filter });
-        // if (issues.length < 1) {
-        //   return res.json({
-        //     error: "Not Found",
-        //     project,
-        //   });
-        // }
-
-        res.json(issues);
+        return res.json(issues);
       } catch (error) {
         res.status(500).json({ error: error.message });
       }
@@ -40,39 +32,61 @@ module.exports = function (app, myDataBase) {
     })
 
     .post(async function (req, res) {
+      let project = req.params.project;
+      let newIssue = {
+        project,
+        issue_title: req.body.issue_title,
+        issue_text: req.body.issue_text,
+        created_on: new Date(),
+        updated_on: new Date(),
+        created_by: req.body.created_by,
+        assigned_to: req.body.assigned_to,
+        open: true,
+        status_text: req.body.status_text,
+      };
+      const { error } = Issue.validate(newIssue);
+      if (error) {
+        // If validation fails, return the required field(s) missing error
+        return res.send({ error: "required field(s) missing" });
+      }
       try {
-        let project = req.params.project;
-        let newIssue = {
-          project,
+        // Prepare the new issue object
+        const newIssue = {
+          project: req.params.project,
           issue_title: req.body.issue_title,
           issue_text: req.body.issue_text,
           created_on: new Date(),
           updated_on: new Date(),
           created_by: req.body.created_by,
-          assigned_to: req.body.assigned_to,
+          assigned_to: req.body.assigned_to || "", // Set default values if empty
           open: true,
-          status_text: req.body.status_text,
+          status_text: req.body.status_text || "",
         };
-        const { error, value } = await Issue.validateAsync(newIssue);
 
-        let { insertedId } = await myDataBase.insertOne(newIssue);
-        res.send({
+        // Validate the new issue
+
+        // Insert into database if validation passes
+        const { insertedId } = await myDataBase.insertOne(newIssue);
+        // Return the inserted issue data
+        return res.send({
           _id: insertedId,
-          assigned_to: newIssue.assigned_to,
-          status_text: newIssue.status_text,
-          open: newIssue.open,
           issue_title: newIssue.issue_title,
           issue_text: newIssue.issue_text,
           created_by: newIssue.created_by,
+          assigned_to: newIssue.assigned_to,
+          status_text: newIssue.status_text,
+          open: newIssue.open,
           created_on: newIssue.created_on,
           updated_on: newIssue.updated_on,
         });
       } catch (error) {
-        res.status(500).json({ error: error.message });
+        // Handle unexpected errors
+        return res.status(500).json({ error: error.message });
       }
     })
 
     .put(async function (req, res) {
+      // Construct updated issue fields only if they are present in the request
       const updatedIssue = {
         ...(req.body.issue_title ? { issue_title: req.body.issue_title } : {}),
         ...(req.body.issue_text ? { issue_text: req.body.issue_text } : {}),
@@ -82,33 +96,58 @@ module.exports = function (app, myDataBase) {
         ...(req.body.status_text ? { status_text: req.body.status_text } : {}),
       };
 
+      // Ensure _id is provided
       if (!req.body.hasOwnProperty("_id")) {
         return res.send({
           error: "missing _id",
         });
       }
+
       const { _id } = req.body;
-      if (!Object.entries(updatedIssue).length)
+
+      // Find the issue with the provided _id
+      const findResult = await myDataBase
+        .find({ _id: new ObjectId(_id) })
+        .toArray();
+
+      // If no matching issue is found, return error
+      if (!findResult.length) {
         return res.send({
           error: "could not update",
           _id: _id,
         });
-      updatedIssue["updated_on"] = new Date();
+      }
+
       try {
+        // If no update fields are present, return error with the expected format
+        if (!Object.entries(updatedIssue).length) {
+          return res.send({
+            error: "no update field(s) sent",
+            _id: _id, // Include the _id in the error response to match the expected format
+          });
+        }
+
+        // Update the issue
+        updatedIssue["updated_on"] = new Date();
         const result = await myDataBase.updateOne(
           { _id: new ObjectId(_id) },
           { $set: updatedIssue }
         );
+
+        // If no modification occurred, return error
         if (!result.modifiedCount)
           return res.send({
             error: "could not update",
             _id: _id,
           });
+
+        // Success response
         res.send({
           result: "successfully updated",
           _id,
         });
       } catch (error) {
+        // Catch and return any other errors
         return res.send({
           error: "could not update",
           _id,

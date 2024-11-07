@@ -3,14 +3,14 @@
 const Joi = require("joi");
 
 const Issue = Joi.object({
-  project: Joi.string().alphanum().required(),
+  project: Joi.string().required(),
   issue_title: Joi.string().required(),
   issue_text: Joi.string().required(),
-  assigned_to: Joi.string(),
   created_by: Joi.string().required(),
+  assigned_to: Joi.string().allow(""),
   created_on: Joi.date(),
   updated_on: Joi.date(),
-  status_text: Joi.string(),
+  status_text: Joi.string().allow(""),
   open: Joi.boolean(),
 });
 module.exports = Issue;

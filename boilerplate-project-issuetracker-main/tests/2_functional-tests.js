@@ -57,8 +57,8 @@ suite("Functional Tests", function () {
         // created_by: "Ponimin",
       })
       .end(function (err, res) {
-        assert.equal(res.status, 500);
-        // assert.property(res.body, "_id");
+        assert.equal(res.status, 200);
+        assert.equal(res.body.error, "required field(s) missing");
         // assert.lengthOf(res.body._id, 24);
         done();
       });
@@ -136,7 +136,7 @@ suite("Functional Tests", function () {
         done();
       });
   });
-  test("Test#10 UpdateUpdate an issue with missing _id: PUT request to /api/issues/{project}", function (done) {
+  test("Test#9 UpdateUpdate an issue with missing _id: PUT request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
@@ -154,7 +154,7 @@ suite("Functional Tests", function () {
         done();
       });
   });
-  test("Test#11 Update an issue with no fields to update: PUT request to /api/issues/{project}", function (done) {
+  test("Test#10 Update an issue with no fields to update: PUT request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
@@ -166,12 +166,12 @@ suite("Functional Tests", function () {
         assert.equal(res.status, 200);
 
         // assert.equal(res.body._id, "672b13044c521c0bc4ea9932");
-        assert.equal(res.body.error, "could not update");
+        assert.equal(res.body.error, "no update field(s) sent");
         // assert.isNotEmpty(res.body, "should be not empty ");
         done();
       });
   });
-  test("Test#12 Update an issue with an invalid _id: PUT request to /api/issues/{project}", function (done) {
+  test("Test#11 Update an issue with an invalid _id: PUT request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
@@ -188,7 +188,7 @@ suite("Functional Tests", function () {
         done();
       });
   });
-  test("Test#13 Delete an issue: DELETE request to /api/issues/{project}", function (done) {
+  test("Test#12 Delete an issue: DELETE request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
@@ -206,7 +206,7 @@ suite("Functional Tests", function () {
         done();
       });
   });
-  test("Test#14 Delete an issue with an invalid _id: DELETE request to /api/issues/{project}", function (done) {
+  test("Test#13 Delete an issue with an invalid _id: DELETE request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
@@ -222,7 +222,7 @@ suite("Functional Tests", function () {
         done();
       });
   });
-  test("Test#15 Delete an issue with missing _id: DELETE request to /api/issues/{project}", function (done) {
+  test("Test#14 Delete an issue with missing _id: DELETE request to /api/issues/{project}", function (done) {
     chai
       .request(server)
       .keepOpen()
