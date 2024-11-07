@@ -1,6 +1,7 @@
 "use strict";
-const { ObjectId } = require("mongodb");
+const { ObjectId,isValidObjectId } = require("mongodb");
 const Issue = require("../public/models/issueModel");
+
 module.exports = function (app, myDataBase) {
   app
     .route("/api/issues/:project")
@@ -96,36 +97,47 @@ module.exports = function (app, myDataBase) {
         ...(req.body.status_text ? { status_text: req.body.status_text } : {}),
       };
 
+
       // Ensure _id is provided
       if (!req.body.hasOwnProperty("_id")) {
         return res.send({
           error: "missing _id",
         });
       }
-
       const { _id } = req.body;
+      
 
       // Find the issue with the provided _id
-      const findResult = await myDataBase
-        .find({ _id: new ObjectId(_id) })
-        .toArray();
-
-      // If no matching issue is found, return error
-      if (!findResult.length) {
-        return res.send({
-          error: "could not update",
-          _id: _id,
-        });
-      }
-
+      let findResult=[];
       try {
-        // If no update fields are present, return error with the expected format
         if (!Object.entries(updatedIssue).length) {
           return res.send({
             error: "no update field(s) sent",
             _id: _id, // Include the _id in the error response to match the expected format
           });
         }
+        findResult = await myDataBase
+          .find({ _id: new ObjectId(_id) })
+          .toArray();
+          if (!findResult.length) {
+            return res.send({
+              error: "could not update",
+              _id: _id,
+            });
+          }
+      } catch (error) {
+        return res.send({
+          error: "could not update",
+          _id: _id,
+        });         
+      }
+     
+      // If no matching issue is found, return error
+      
+
+      try {
+        // If no update fields are present, return error with the expected format
+        
 
         // Update the issue
         updatedIssue["updated_on"] = new Date();
@@ -152,7 +164,105 @@ module.exports = function (app, myDataBase) {
           error: "could not update",
           _id,
         });
-      }
+       }
+    //   let projectName = req.params.project;
+
+    //   if(req.body._id===undefined) {
+    //     res.send({ error: 'missing _id' });
+    //     return;
+    //   }
+
+    //   let idAsObject = "";
+    //   if(ObjectId.isValid(req.body._id)) {
+    //     idAsObject = new ObjectId(req.body._id);
+    //   }
+    //   else {
+    //     res.send({error: "could not update",
+    //               _id: req.body._id});
+    //     return;
+    //   }
+      
+    //   let query = {_id: idAsObject, project: projectName};
+
+    //   let updatedObj = {};
+
+    //   let emptyFieldsNumber = 0;
+      
+    //   if(req.body.issue_title!==undefined)
+    //     updatedObj.issue_title = req.body.issue_title;
+    //   else
+    //     emptyFieldsNumber++;
+      
+    //   if(req.body.issue_text!==undefined)
+    //     updatedObj.issue_text = req.body.issue_text;
+    //   else
+    //     emptyFieldsNumber++;
+      
+    //   if(req.body.created_by!==undefined)
+    //     updatedObj.created_by = req.body.created_by;
+    //   else
+    //     emptyFieldsNumber++;
+      
+    //   if(req.body.assigned_to!==undefined)
+    //     updatedObj.assigned_to = req.body.assigned_to;
+    //   else
+    //     emptyFieldsNumber++;
+      
+    //   if(req.body.status_text!==undefined)
+    //     updatedObj.status_text = req.body.status_text;
+    //   else
+    //     emptyFieldsNumber++;
+      
+    //   if(emptyFieldsNumber === 5 &&
+    //      req.body.open===undefined) {
+    //     res.send({error: 'no update field(s) sent', 
+    //               _id: req.body._id});
+        
+    //     return;
+    //   }
+      
+    //   if(req.body.open==="false")
+    //     updatedObj.open = false;
+	  // if(req.body.open===false)
+		// updatedObj.open = false;
+
+    //   let search = {_id: idAsObject, project: projectName};
+    //   database.find(search)
+    //           .toArray((err, result) => {
+
+    //     console.log("result.length = " + result.length);
+                
+    //     if(err) {
+    //       res.send({error: 'could not update',
+    //                 _id: req.body._id});
+    //       return;
+    //     }
+    //     else if(result.length === 1) {
+
+		//       updatedObj.updated_on = dateFormat(new Date());
+    //       let newValues = { $set: updatedObj };
+          
+    //       database
+    //       .findOneAndUpdate(query, newValues,
+    //                  (err, result) => {
+                       
+    //         if (err) {
+    //           res.send({error: 'could not update',
+    //                     _id: req.body._id}); 
+    //           return;
+    //         }
+    //         else
+    //           res.json({result: 'successfully updated', 
+    //                     _id: req.body._id});
+    //           return;
+    //       });
+    //     }
+    //     else {
+    //       res.send({error: 'could not update', 
+    //                 _id: req.body._id});
+    //       return;
+    //     }
+    //   });
     })
 
     .delete(async function (req, res) {

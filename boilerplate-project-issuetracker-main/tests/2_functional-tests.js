@@ -105,13 +105,13 @@ suite("Functional Tests", function () {
       .keepOpen()
       .put("/api/issues/apitest")
       .send({
-        _id: "672b13044c521c0bc4ea9932",
+        _id: created_id,
         issue_title: "Jeng jeng jeng berubah",
       })
       .end(function (err, res) {
         assert.equal(res.status, 200);
 
-        assert.equal(res.body._id, "672b13044c521c0bc4ea9932");
+        assert.equal(res.body._id, created_id);
         assert.equal(res.body.result, "successfully updated");
         // assert.isNotEmpty(res.body, "should be not empty ");
         done();
@@ -123,14 +123,14 @@ suite("Functional Tests", function () {
       .keepOpen()
       .put("/api/issues/apitest")
       .send({
-        _id: "672b13044c521c0bc4ea9932",
+        _id: created_id,
         issue_title: "Jengje berubah",
         assigned_to: "Nama Berubah hohoho",
       })
       .end(function (err, res) {
         assert.equal(res.status, 200);
 
-        assert.equal(res.body._id, "672b13044c521c0bc4ea9932");
+        assert.equal(res.body._id, created_id);
         assert.equal(res.body.result, "successfully updated");
         // assert.isNotEmpty(res.body, "should be not empty ");
         done();
@@ -160,12 +160,12 @@ suite("Functional Tests", function () {
       .keepOpen()
       .put("/api/issues/apitest")
       .send({
-        _id: "672b13044c521c0bc4ea9932",
+        _id: created_id,
       })
       .end(function (err, res) {
         assert.equal(res.status, 200);
 
-        // assert.equal(res.body._id, "672b13044c521c0bc4ea9932");
+        assert.equal(res.body._id, created_id);
         assert.equal(res.body.error, "no update field(s) sent");
         // assert.isNotEmpty(res.body, "should be not empty ");
         done();
@@ -178,6 +178,8 @@ suite("Functional Tests", function () {
       .put("/api/issues/apitest")
       .send({
         _id: "672b13044c521c0bc4ea9939",
+        issue_title: "Jengje berubah",
+        assigned_to: "Nama Berubah hohoho",
       })
       .end(function (err, res) {
         assert.equal(res.status, 200);
