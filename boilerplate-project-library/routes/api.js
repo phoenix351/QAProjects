@@ -8,7 +8,6 @@
 
 "use strict";
 const { ObjectId } = require("mongodb");
-const Book = require("../public/models/Book");
 
 module.exports = function (app, myBook) {
   app
@@ -31,7 +30,6 @@ module.exports = function (app, myBook) {
       if (title.length === 0) {
         return res.send("missing required field title");
       }
-      const { error, value } = Book.validate({ title });
       try {
         const newBook = {
           title,
