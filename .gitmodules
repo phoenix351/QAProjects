@@ -1,0 +1,3 @@
+[submodule "boilerplate-project-sudoku-solver"]
+	path = boilerplate-project-sudoku-solver
+	url = https://github.com/freeCodeCamp/boilerplate-project-sudoku-solver.git
