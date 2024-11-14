@@ -28,30 +28,37 @@ app.route("/").get(function (req, res) {
 fccTestingRoutes(app);
 
 //Routing for API
-connection(async function (client) {
-  const myBook = await client.db("database").collection("books");
-  apiRoutes(app, myBook);
-});
+const connectApiRoutes = async () => {
+  await connection(async function (client) {
+    const myBook = await client.db("database").collection("books");
+    apiRoutes(app, myBook);
+    app.use(function (req, res, next) {
+      res.status(404).type("text").send("Not Found");
+    });
+  });
+  console.log("1");
+};
+(async () => {
+  await connectApiRoutes();
+  const listener = app.listen(process.env.PORT || 3000, function () {
+    console.log("Your app is listening on port " + listener.address().port);
+    if (process.env.NODE_ENV === "test") {
+      console.log("Running Tests...");
+      setTimeout(function () {
+        try {
+          runner.run();
+        } catch (e) {
+          console.log("Tests are not valid:");
+          console.error(e);
+        }
+      }, 1500);
+    }
+  });
+})();
+
 // apiRoutes(app)
 // //404 Not Found Middleware
-// app.use(function (req, res, next) {
-//   res.status(404).type("text").send("Not Found");
-// });
 
 //Start our server and tests!
-const listener = app.listen(process.env.PORT || 3000, function () {
-  console.log("Your app is listening on port " + listener.address().port);
-  if (process.env.NODE_ENV === "test") {
-    console.log("Running Tests...");
-    setTimeout(function () {
-      try {
-        runner.run();
-      } catch (e) {
-        console.log("Tests are not valid:");
-        console.error(e);
-      }
-    }, 1500);
-  }
-});
 
 module.exports = app; //for unit/functional testing
