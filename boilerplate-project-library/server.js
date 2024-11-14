@@ -36,7 +36,6 @@ const connectApiRoutes = async () => {
       res.status(404).type("text").send("Not Found");
     });
   });
-  console.log("1");
 };
 (async () => {
   await connectApiRoutes();

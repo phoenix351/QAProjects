@@ -45,7 +45,7 @@ module.exports = function (app, myBook) {
 
         return res.send(result);
       } catch (error) {
-        console.log("error happen");
+        // console.log("error happen");
 
         return res.send({
           error: "Failed to Add Book to Database",
@@ -68,7 +68,7 @@ module.exports = function (app, myBook) {
     .route("/api/books/:id")
     .get(async function (req, res) {
       let bookid = req.params.id;
-      console.log({ bookid });
+      // console.log({ bookid });
 
       if (!ObjectId.isValid(bookid)) {
         return res.send("no book exists");
@@ -92,15 +92,22 @@ module.exports = function (app, myBook) {
         return res.send("missing required field comment");
       }
       const comment = req.body.comment;
+      // console.log({ before: result.comments, add: comment });
       result.comments.push(comment);
       // result.commentcount++;
-      console.log({ks:result.comments});
-      
+
       try {
         const updateResult = await myBook.updateOne(
-          { _id: bookid },
-          { $set: { comments: result.comments, commentcount: result.comments.length } }
+          { _id: new ObjectId(bookid) },
+          {
+            $set: {
+              comments: result.comments,
+              commentcount: result.comments.length,
+            },
+          }
         );
+        // console.log({ updateResult });
+
         return res.send({
           _id: bookid,
           title: result.title,
