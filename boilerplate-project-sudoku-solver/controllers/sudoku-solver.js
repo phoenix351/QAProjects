@@ -14,22 +14,74 @@ class SudokuSolver {
       return { error: "Invalid characters in puzzle" };
     return { message: "SOmehow, it passed" };
   }
+  stringtoArrayPuzzle(puzzleString, from = 0, to = 1) {
+    const oneDimensionArrayPuzzle =
+      from === 0 ? puzzleString.split("") : puzzleString;
+    let twoDimensionArrayPuzzle = [];
+    let rowTemp = [];
+    oneDimensionArrayPuzzle.forEach((value, index) => {
+      rowTemp = [...rowTemp, value];
+      if ((index + 1) % 9 === 0) {
+        twoDimensionArrayPuzzle = [...twoDimensionArrayPuzzle, rowTemp];
+        rowTemp = [];
+      }
+    });
+    return to === 1 ? oneDimensionArrayPuzzle : twoDimensionArrayPuzzle;
+  }
+  getColumns(puzzleArray) {
+    let columns = [];
+    for (let i = 0; i < 9; i++) {
+      let column = [];
+      for (let j = 0; j < 9; j++) {
+        column = [...column, puzzleArray[i + j * 9]];
+      }
+      columns = [...columns, column];
+    }
+    return columns;
+  }
+  getRegions(puzzleArray) {
+    let regions = Array.from({ length: 9 }, () => []); // Create an array of 9 empty arrays
 
-  checkRowPlacement(row, value) {
+    puzzleArray.forEach((value, index) => {
+      let row = Math.floor(index / 9); // Get the row index
+      let col = index % 9; // Get the column index
+      let region = Math.floor(row / 3) * 3 + Math.floor(col / 3); // Calculate the region index
+      regions[region].push(value); // Add the value to the corresponding region
+    });
+
+    return regions; // Return the grouped regions
+  }
+
+  checkRowPlacement(puzzleArray, value, rowIndex) {
     if (value === ".") return false;
+    puzzleArray = this.stringtoArrayPuzzle(puzzleArray, 1, 2);
+    // console.log({ rowIndex });
+
+    // return;
+    const row = puzzleArray[rowIndex];
     const isDuplicated = row.filter((num) => num === value).length > 1;
     return isDuplicated;
   }
   // need sm
 
-  checkColPlacement(column, value) {
+  checkColPlacement(puzzleArray, value, colIndex) {
     if (value === ".") return false;
-    const isDuplicated = column.filter((num) => num === value).length > 1;
-    return isDuplicated;
+    puzzleArray = this.getColumns(puzzleArray);
+    const col = puzzleArray[colIndex];
+    // console.log(colIndex);
+    try {
+      const isDuplicated = col.filter((num) => num === value).length > 1;
+      return isDuplicated;
+    } catch (error) {}
   }
 
-  checkRegionPlacement(region, value) {
+  checkRegionPlacement(puzzleArray, value, regionIndex) {
     if (value === ".") return false;
+    puzzleArray = this.getRegions(puzzleArray);
+    // console.log({ regionIndex });
+
+    const region = puzzleArray[regionIndex];
+
     const isDuplicated = region.filter((num) => num === value).length > 1;
     return isDuplicated;
   }
@@ -39,14 +91,14 @@ class SudokuSolver {
     if (validString.hasOwnProperty("error")) {
       return validString;
     }
-    const rows = [];
-    const cols = [];
-    const regions = [];
+    // return puzzleArray;
+
     let totalGrid = 9;
     let currentRowIndex = 0;
     let currentColIndex = 0;
     let currentRegionIndex = 0;
-    const puzzleArray = puzzleString.split("");
+    const puzzleArray = this.stringtoArrayPuzzle(puzzleString, 0, 1);
+    // const puzzleArray = puzzleString.split("");
     for (let index = 0; index < puzzleArray.length; index++) {
       const char = puzzleArray[index];
       currentRowIndex = Math.floor(index / totalGrid) + 1;
@@ -55,34 +107,23 @@ class SudokuSolver {
       const row_ = Math.floor((currentRowIndex - 1) / 3);
       const col_ = Math.floor((currentColIndex - 1) / 3);
       currentRegionIndex = col_ + 3 * row_;
-      if (!rows[currentRowIndex - 1]) {
-        rows[currentRowIndex - 1] = [char];
-      } else {
-        rows[currentRowIndex - 1] = [...rows[currentRowIndex - 1], char];
-      }
-      if (!cols[currentColIndex - 1]) {
-        cols[currentColIndex - 1] = [char];
-      } else {
-        cols[currentColIndex - 1] = [...cols[currentColIndex - 1], char];
-      }
-      if (!regions[currentRegionIndex]) {
-        regions[currentRegionIndex] = [char];
-      } else {
-        regions[currentRegionIndex] = [...regions[currentRegionIndex], char];
-      }
+
       // row placement check
       let rowPlacement = this.checkRowPlacement(
-        rows[currentRowIndex - 1],
-        char
+        puzzleArray,
+        char,
+        currentRowIndex - 1
       );
 
       let colPlacement = this.checkColPlacement(
-        rows[currentRowIndex - 1],
-        char
+        puzzleArray,
+        char,
+        currentColIndex - 1
       );
       let regionPlacement = this.checkRegionPlacement(
-        regions[currentRegionIndex],
-        char
+        puzzleArray,
+        char,
+        currentRegionIndex
       );
 
       // row placement check
@@ -90,6 +131,9 @@ class SudokuSolver {
         return { error: "Puzzle cannot be solved" };
       }
     }
+    let cols = this.getColumns(puzzleArray);
+    let rows = this.stringtoArrayPuzzle(puzzleString, 0, 2);
+    let regions = this.getRegions(puzzleArray);
     const board = [...rows];
     function backTrack(col, row) {
       // if we reached end of rows puzzle is solved
@@ -125,7 +169,7 @@ class SudokuSolver {
       return false;
     }
     backTrack(0, 0);
-    return board.flat().join('');
+    return board.flat().join("");
   }
 }
 
