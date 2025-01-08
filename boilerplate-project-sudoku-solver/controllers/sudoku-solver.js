@@ -51,39 +51,51 @@ class SudokuSolver {
 
     return regions; // Return the grouped regions
   }
+  // need sm
+  alphaToNumber(alphabet) {
+    return alphabet.toUpperCase().charCodeAt(0) - 64;
+  }
+  coordinateToRegion(coordinate) {
+    const row = coordinate[1] - 1;
+    const column = this.alphaToNumber(coordinate) - 1;
+    // console.log({ row, column });
 
-  checkRowPlacement(puzzleArray, value, rowIndex) {
+    return Math.floor(row / 3) * 3 + Math.floor(column / 3);
+  }
+  checkRowPlacement(puzzleArray, value, rowIndex, isNewValue = true) {
     if (value === ".") return false;
     puzzleArray = this.stringtoArrayPuzzle(puzzleArray, 1, 2);
-    // console.log({ rowIndex });
 
     // return;
     const row = puzzleArray[rowIndex];
-    const isDuplicated = row.filter((num) => num === value).length > 1;
+    const limit = isNewValue ? 0 : 1;
+    const isDuplicated = row.filter((num) => num === value).length > limit;
+
     return isDuplicated;
   }
-  // need sm
 
-  checkColPlacement(puzzleArray, value, colIndex) {
+  checkColPlacement(puzzleArray, value, colIndex, isNewValue = true) {
     if (value === ".") return false;
     puzzleArray = this.getColumns(puzzleArray);
     const col = puzzleArray[colIndex];
-    // console.log(colIndex);
-    try {
-      const isDuplicated = col.filter((num) => num === value).length > 1;
-      return isDuplicated;
-    } catch (error) {}
+    const limit = isNewValue ? 0 : 1;
+
+    const isDuplicated = col.filter((num) => num === value).length > limit;
+    return isDuplicated;
   }
 
-  checkRegionPlacement(puzzleArray, value, regionIndex) {
+  checkRegionPlacement(puzzleArray, value, regionIndex, isNewValue = true) {
     if (value === ".") return false;
     puzzleArray = this.getRegions(puzzleArray);
-    // console.log({ regionIndex });
 
     const region = puzzleArray[regionIndex];
-
-    const isDuplicated = region.filter((num) => num === value).length > 1;
-    return isDuplicated;
+    const limit = isNewValue ? 0 : 1;
+    try {
+      const isDuplicated = region.filter((num) => num === value).length > limit;
+      return isDuplicated;
+    } catch (error) {
+      // console.log({ regionIndex });
+    }
   }
 
   solve(puzzleString) {
@@ -112,21 +124,25 @@ class SudokuSolver {
       let rowPlacement = this.checkRowPlacement(
         puzzleArray,
         char,
-        currentRowIndex - 1
+        currentRowIndex - 1,
+        false
       );
 
       let colPlacement = this.checkColPlacement(
         puzzleArray,
         char,
-        currentColIndex - 1
+        currentColIndex - 1,
+        false
       );
       let regionPlacement = this.checkRegionPlacement(
         puzzleArray,
         char,
-        currentRegionIndex
+        currentRegionIndex,
+        false
       );
 
       // row placement check
+
       if (colPlacement || rowPlacement || regionPlacement) {
         return { error: "Puzzle cannot be solved" };
       }
